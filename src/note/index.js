@@ -1,3 +1,5 @@
+const { REGISTER_INSTANCE } = require("ts-node")
+
 function diff(arr) {
     //数组拷贝
     const copy = arr.slice()
@@ -63,62 +65,6 @@ function getMaxProfit(prices) {
     }
     return maxProfile;
 }
-// const arr = [15, 4, 1, 5, 2, 13, 0]
-// const ret = getMaxProfit(arr)
-// console.log(ret);
-
-new Promise((resolve, reject) => {
-    console.log("A");
-    setTimeout(() => {
-        console.log("B");
-    }, 0);
-    console.log("C");
-    resolve();
-    console.log("D");
-})
-    .then(() => {
-        console.log("E");
-        new Promise((resolve, reject) => {
-            console.log("F");
-            resolve();
-            console.log("G");
-        })
-            .then(() => {
-                setTimeout(() => {
-                    console.log("H");
-                }, 0);
-                console.log("I");
-            })
-            .then(() => {
-                console.log("J");
-            });
-    })
-    .then(() => {
-        console.log("K");
-    });
-
-setTimeout(() => {
-    console.log("L");
-}, 0);
-
-new Promise((resolve, reject) => {
-    console.log("M");
-    resolve();
-}).then(() => {
-    setTimeout(() => {
-        new Promise((resolve, reject) => {
-            console.log("N");
-            resolve();
-        })
-            .then(() => {
-                setTimeout(() => {
-                    console.log("O");
-                }, 0);
-            })
-            .then(() => {
-                console.log("P");
-            });
-    }, 0);
-});
-
-console.log("Q");
+const arr = [15, 4, 1, 5, 2, 13, 0]
+const ret = getMaxProfit(arr)
+console.log(ret);

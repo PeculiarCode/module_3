@@ -57,16 +57,72 @@ const user1: Student = {
 }
 //class继承implements
 class User2 implements Person {
-    name: 'jassica'
+    name = 'jassica'
     say() {
         return 'haha'
     }
 }
 class Animal {
-    name = 'dog'
+    name = 'animal'
     say() {
         return this.name
     }
 }
-const dog = new Animal()
-console.log(dog.say())
+class Cat extends Animal {
+    age = 1
+    eat() {
+        return 'eat'
+    }
+    //子类重写父类方法,super调用父类方法
+    say() {
+        return super.say() + this.age
+    }
+}
+const cat = new Cat()
+// console.log(cat.say())
+/* 
+1 默认是public 类的内外都能访问
+2 private只允许类内访问
+3 protected允许类内和继承子类访问
+ */
+
+//创建class实例constructor立即执行
+class Computer {
+    //this.name = name
+    constructor(public name: string) {}
+}
+// const game = new Computer('lol')
+// console.log(game.name)
+
+//子类继承父类都使用构造器super调用父类传入参数
+class Keyboard extends Computer {
+    constructor(public method: string) {
+        super('player')
+    }
+}
+const player = new Keyboard('you')
+console.log(player.method)
+
+//私有属性保护
+class GetName {
+    constructor(private _name: string) {}
+    get name() {
+        return this._name
+    }
+    set name(name: string) {
+        this._name = name
+    }
+}
+const real = new GetName('jack wu')
+real.name = 'new jack'
+console.log(real.name)
+
+//抽象类 多个class拥有的共性 不能实例化只能继承
+abstract class Geo {
+    abstract getArea(): number
+}
+class Tringle extends Geo {
+    getArea() {
+        return 123
+    }
+}
