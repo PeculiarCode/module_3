@@ -126,3 +126,8 @@ class Tringle extends Geo {
         return 123
     }
 }
+// 函数泛型
+function fn<T>(params: T) {
+    return params
+}
+
