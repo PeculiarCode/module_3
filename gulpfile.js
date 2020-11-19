@@ -51,22 +51,26 @@ const data = {
     pkg: require('./package.json'),
     date: new Date(),
 }
+
+const clean = () => {
+    return del(['dist', 'temp'])
+}
 const style = () => {
     return src('src/assets/styles/*.scss', { base: 'src' })
         .pipe(plugins.sass({ outputStyle: 'expanded' }))
-        .pipe(dest('dist'))
+        .pipe(dest('temp'))
 }
 
 const scripts = () => {
     return src('src/assets/scripts/*.js', { base: 'src' })
         .pipe(plugins.babel({ presets: ['@babel/preset-env'] }))
-        .pipe(dest('dist'))
+        .pipe(dest('temp'))
 }
 
 const page = () => {
     return src('src/**/*.html', { base: 'src' })
         .pipe(plugins.swig({ data, defaults: { cache: false } }))
-        .pipe(dest('dist'))
+        .pipe(dest('temp'))
 }
 
 const image = () => {
@@ -85,13 +89,10 @@ const extra = () => {
     return src('public/**', { base: 'public' }).pipe(dest('dist'))
 }
 
-const clean = () => {
-    return del(['dist'])
-}
 //生产环境进行html注释路径匹配
 const useref = () => {
-    return src('dist/**/*.html', { base: 'dist' })
-        .pipe(plugins.useref({ searchPath: ['dist', '.'] }))
+    return src('temp/**/*.html', { base: 'temp' })
+        .pipe(plugins.useref({ searchPath: ['temp', '.'] }))
         .pipe(plugins.if(/\.js$/, plugins.uglify()))
         .pipe(plugins.if(/\.css$/, plugins.cleanCss()))
         .pipe(
@@ -104,7 +105,7 @@ const useref = () => {
                 })
             )
         )
-        .pipe(dest('release'))
+        .pipe(dest('dist'))
 }
 const server = () => {
     //监听文件路径变化触发回调函数
@@ -125,7 +126,7 @@ const server = () => {
         port: 2024,
         files: 'dist/**', //监听文件改变触发serve
         server: {
-            baseDir: ['dist', 'src', 'public'],
+            baseDir: ['temp', 'src', 'public'],
             routes: {
                 '/node_modules': 'node_modules',
             },
@@ -134,11 +135,12 @@ const server = () => {
 }
 //文件路径和后缀名都不能有错误拼写否则watch无法执行
 const compile = parallel(page, scripts, style)
-const build = series(clean, parallel(compile, extra, image, fonts))
+const build = series(
+    clean,
+    parallel(series(compile, useref), extra, image, fonts)
+)
 const serve = series(compile, server)
 module.exports = {
     build,
     serve,
-    compile,
-    useref,
 }
