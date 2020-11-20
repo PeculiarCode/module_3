@@ -2,97 +2,56 @@
 //错误优先
 const { series, src, dest, parallel, watch } = require('gulp')
 const del = require('del')
-// const sass = require('gulp-sass')
-// const babel = require('gulp-babel')
-// const swig = require('gulp-swig')
-// const imagemin = require('gulp-imagemin')
 const loadPlugins = require('gulp-load-plugins')
 const plugins = loadPlugins()
 const browserSync = require('browser-sync')
 const bs = browserSync.create()
-
-const data = {
-    menus: [
-        {
-            name: 'Home',
-            icon: 'aperture',
-            link: 'index.html',
-        },
-        {
-            name: 'Features',
-            link: 'features.html',
-        },
-        {
-            name: 'About',
-            link: 'about.html',
-        },
-        {
-            name: 'Contact',
-            link: '#',
-            children: [
-                {
-                    name: 'Twitter',
-                    link: 'https://twitter.com/w_zce',
-                },
-                {
-                    name: 'About',
-                    link: 'https://weibo.com/zceme',
-                },
-                {
-                    name: 'divider',
-                },
-                {
-                    name: 'About',
-                    link: 'https://github.com/zce',
-                },
-            ],
-        },
-    ],
-    pkg: require('./package.json'),
-    date: new Date(),
-}
-
+const { config } = require('./path.config')
+const { data } = require('./src/data/data.js')
 const clean = () => {
-    return del(['dist', 'temp'])
+    return del([config.DIST, config.TEMP])
 }
 const style = () => {
-    return src('src/assets/styles/*.scss', { base: 'src' })
+    return src(config.STYLE, { base: config.SRC })
         .pipe(plugins.sass({ outputStyle: 'expanded' }))
-        .pipe(dest('temp'))
+        .pipe(dest(config.TEMP))
+        .pipe(bs.reload({ stream: true }))
 }
 
 const scripts = () => {
-    return src('src/assets/scripts/*.js', { base: 'src' })
+    return src(config.SCRIPTS, { base: config.SRC })
         .pipe(plugins.babel({ presets: ['@babel/preset-env'] }))
-        .pipe(dest('temp'))
+        .pipe(dest(config.TEMP))
+        .pipe(bs.reload({ stream: true }))
 }
 
 const page = () => {
-    return src('src/**/*.html', { base: 'src' })
+    return src(config.PAGE, { base: config.SRC })
         .pipe(plugins.swig({ data, defaults: { cache: false } }))
-        .pipe(dest('temp'))
+        .pipe(dest(config.TEMP))
+        .pipe(bs.reload({ stream: true }))
 }
 
 const image = () => {
-    return src('src/assets/images/**', { base: 'src' })
+    return src(config.IMAGE, { base: config.SRC })
         .pipe(plugins.imagemin())
-        .pipe(dest('dist'))
+        .pipe(dest(config.DIST))
 }
 
 const fonts = () => {
-    return src('src/assets/fonts/**', { base: 'src' })
+    return src(config.FONTS, { base: config.SRC })
         .pipe(plugins.imagemin())
-        .pipe(dest('dist'))
+        .pipe(dest(config.DIST))
 }
 
 const extra = () => {
-    return src('public/**', { base: 'public' }).pipe(dest('dist'))
+    return src(config.EXTRA, { base: config.PUBLIC }).pipe(dest(config.DIST))
 }
 
 //生产环境进行html注释路径匹配
 const useref = () => {
-    return src('temp/**/*.html', { base: 'temp' })
-        .pipe(plugins.useref({ searchPath: ['temp', '.'] }))
+    return src(config.TEMPS, { base: config.TEMP })
+        .pipe(plugins.useref({ searchPath: [config.TEMP, config.LOCAL] }))
         .pipe(plugins.if(/\.js$/, plugins.uglify()))
         .pipe(plugins.if(/\.css$/, plugins.cleanCss()))
         .pipe(
@@ -105,17 +64,14 @@ const useref = () => {
                 })
             )
         )
-        .pipe(dest('dist'))
+        .pipe(dest(config.DIST))
 }
 const server = () => {
     //监听文件路径变化触发回调函数
-    watch('src/assets/styles/*.scss', style)
-    watch('src/assets/scripts/*.js', scripts)
-    watch('src/**/*.html', page)
-    watch(
-        ['src/assets/images/**', 'src/assets/fonts/**', 'public/**'],
-        bs.reload
-    )
+    watch(config.STYLE, style)
+    watch(config.SCRIPTS, scripts)
+    watch(config.PAGE, page)
+    watch([config.IMAGE, config.FONTS, config.EXTRA], bs.reload)
     /*    
     watch('src/assets/images/**', image)
     watch('src/assets/fonts/**', fonts)
@@ -124,9 +80,9 @@ const server = () => {
     bs.init({
         notify: false,
         port: 2024,
-        files: 'dist/**', //监听文件改变触发serve
+        // files: 'dist/**', //监听文件改变触发serve
         server: {
-            baseDir: ['temp', 'src', 'public'],
+            baseDir: [config.TEMP, config.SRC, config.PUBLIC],
             routes: {
                 '/node_modules': 'node_modules',
             },
